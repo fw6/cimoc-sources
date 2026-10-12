@@ -1,0 +1,101 @@
+{
+  "$schema": "https://mojuan.fengw.site/schema.json",
+  "schema": 1,
+  "id": "kxmanhua",
+  "title": "开心看漫画",
+  "idPrefix": "kxmanhua-",
+  "base": "https://kxmanhua.com",
+  "headers": {
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8"
+  },
+  "hotlinkReferers": [],
+  "categories": [
+    { "label": "最新上架", "url": "https://kxmanhua.com/manga/library?orderby=3" },
+    { "label": "最近更新", "url": "https://kxmanhua.com/manga/library?orderby=2" },
+    { "label": "人气最高", "url": "https://kxmanhua.com/manga/library?orderby=1" },
+    { "label": "韩漫", "url": "https://kxmanhua.com/manga/library?type=2" },
+    { "label": "日漫", "url": "https://kxmanhua.com/manga/library?type=3" },
+    { "label": "3D漫画", "url": "https://kxmanhua.com/manga/library?type=1" },
+    { "label": "真人漫画", "url": "https://kxmanhua.com/manga/library?type=4" },
+    { "label": "耽美BL", "url": "https://kxmanhua.com/manga/library?type=5" },
+    { "label": "连载中", "url": "https://kxmanhua.com/manga/library?complete=3" },
+    { "label": "已完结", "url": "https://kxmanhua.com/manga/library?complete=2" }
+  ],
+  "ops": {
+    "search": {
+      "request": [
+        { "name": "list", "url": "{base}/manga/search?keyword={keyword|encode}" }
+      ],
+      "items": "div.product__item",
+      "id": {
+        "select": "div.product__item__pic",
+        "attr": "onclick",
+        "transform": ["digitsAfter:/manga/"]
+      },
+      "fields": {
+        "title": [
+          { "select": "h6 a", "transform": ["trim"] },
+          { "select": "h6 a", "attr": "title" },
+          { "select": "img", "attr": "alt" },
+          { "default": "kxmanhua {itemId}" }
+        ],
+        "cover": { "select": "div.product__item__pic", "attr": "data-setbg" },
+        "status": { "select": ".epgreen", "equals": "完结", "then": "finish", "else": "serial" }
+      }
+    },
+    "category": {
+      "request": [{ "name": "list", "url": "{categoryUrl}" }],
+      "items": "div.product__item",
+      "id": {
+        "select": "div.product__item__pic",
+        "attr": "onclick",
+        "transform": ["digitsAfter:/manga/"]
+      },
+      "fields": {
+        "title": [
+          { "select": "h6 a", "transform": ["trim"] },
+          { "select": "h6 a", "attr": "title" },
+          { "select": "img", "attr": "alt" },
+          { "default": "kxmanhua {itemId}" }
+        ],
+        "cover": { "select": "div.product__item__pic", "attr": "data-setbg" },
+        "status": { "select": ".epgreen", "equals": "完结", "then": "finish", "else": "serial" }
+      }
+    },
+    "detail": {
+      "request": [{ "name": "page", "url": "{base}/manga/{comicId}" }],
+      "comic": {
+        "title": [{ "select": "h3", "transform": ["trim"] }, { "default": "kxmanhua {comicId}" }],
+        "cover": { "select": "div.anime__details__pic", "attr": "data-setbg" },
+        "status": {
+          "select": "div.anime__details__pic .epgreen",
+          "equals": "完结",
+          "then": "finish",
+          "else": "serial"
+        },
+        "author": {
+          "array": {
+            "at": "div.anime__details__title span",
+            "contains": "作者：",
+            "take": { "transform": ["stripPrefix:作者：", "trim"] }
+          }
+        },
+        "intro": { "select": "div.anime__details__text > p", "pick": "last" },
+        "lastChapter": { "fromChapter": "last" }
+      },
+      "chapters": {
+        "items": "div.chapter_list a",
+        "index": { "attr": "href", "transform": ["digitsAfter:/detail/"] },
+        "title": [{ "transform": ["trim"] }, { "default": "第{index}话" }],
+        "sort": "asc"
+      }
+    },
+    "images": {
+      "request": [{ "name": "page", "url": "{base}/manga/{comicId}/detail/{chapterIndex}" }],
+      "items": "img[src*=\"/webtoon/content/\"]",
+      "url": { "attr": "src" }
+    }
+  }
+}

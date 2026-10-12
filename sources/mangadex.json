@@ -1,0 +1,198 @@
+{
+  "$schema": "https://mojuan.fengw.site/schema.json",
+  "schema": 1,
+  "id": "mangadex",
+  "title": "MangaDex",
+  "idPrefix": "mangadex-",
+  "base": "https://api.mangadex.org",
+  "vars": {
+    "coverCdn": "https://uploads.mangadex.org/covers",
+    "includes": "includes[]=cover_art&includes[]=author",
+    "content": "contentRating[]=safe&contentRating[]=suggestive",
+    "feed": "translatedLanguage[]=en&order[chapter]=asc&limit=500&includes[]=scanlation_group"
+  },
+  "headers": {
+    "User-Agent": "Mojuan/1.0",
+    "Accept": "application/json"
+  },
+  "ops": {
+    "categories": {
+      "input": "json",
+      "request": [{ "name": "tags", "url": "{base}/manga/tag", "input": "json" }],
+      "items": "data",
+      "where": { "select": "attributes.group", "equals": "genre", "then": "1", "else": "" },
+      "fields": {
+        "label": { "select": "attributes.name", "localized": true }
+      }
+    },
+    "search": {
+      "input": "json",
+      "request": [
+        {
+          "name": "list",
+          "url": "{base}/manga?title={keyword|encode}&limit=24&{includes}&{content}&order[relevance]=desc",
+          "input": "json"
+        }
+      ],
+      "items": "data",
+      "id": "id",
+      "limit": 24,
+      "fields": {
+        "title": [{ "select": "attributes.title", "localized": true }, { "default": "Manga" }],
+        "author": {
+          "array": { "at": "relationships", "key": "type", "equals": "author", "take": "attributes.name" }
+        },
+        "intro": { "select": "attributes.description", "localized": true, "transform": ["stripTags"] },
+        "cover": {
+          "vars": {
+            "mid": "id",
+            "file": {
+              "array": { "at": "relationships", "key": "type", "equals": "cover_art", "take": "attributes.fileName" }
+            }
+          },
+          "template": "{coverCdn}/{mid}/{file}.256.jpg"
+        },
+        "status": { "select": "attributes.status", "equals": "completed", "then": "finish", "else": "serial" },
+        "tags": {
+          "array": {
+            "at": "attributes.tags",
+            "key": "attributes.group",
+            "equals": "genre",
+            "take": { "select": "attributes.name", "localized": true },
+            "first": false
+          }
+        }
+      }
+    },
+    "category": {
+      "input": "json",
+      "request": [
+        { "name": "tags", "url": "{base}/manga/tag", "input": "json" },
+        {
+          "name": "list",
+          "vars": {
+            "tagId": {
+              "array": {
+                "inStep": "tags",
+                "at": "data",
+                "key": { "select": "attributes.name", "localized": true },
+                "equals": "{label}",
+                "take": "id"
+              }
+            }
+          },
+          "url": "{base}/manga?includedTags[]={tagId}&limit=24&{includes}&{content}",
+          "input": "json"
+        }
+      ],
+      "items": { "from": "list", "select": "data" },
+      "id": "id",
+      "limit": 24,
+      "fields": {
+        "title": [{ "select": "attributes.title", "localized": true }, { "default": "Manga" }],
+        "author": {
+          "array": { "at": "relationships", "key": "type", "equals": "author", "take": "attributes.name" }
+        },
+        "intro": { "select": "attributes.description", "localized": true, "transform": ["stripTags"] },
+        "cover": {
+          "vars": {
+            "mid": "id",
+            "file": {
+              "array": { "at": "relationships", "key": "type", "equals": "cover_art", "take": "attributes.fileName" }
+            }
+          },
+          "template": "{coverCdn}/{mid}/{file}.256.jpg"
+        },
+        "status": { "select": "attributes.status", "equals": "completed", "then": "finish", "else": "serial" },
+        "tags": {
+          "array": {
+            "at": "attributes.tags",
+            "key": "attributes.group",
+            "equals": "genre",
+            "take": { "select": "attributes.name", "localized": true },
+            "first": false
+          }
+        }
+      }
+    },
+    "detail": {
+      "input": "json",
+      "request": [
+        {
+          "name": "manga",
+          "url": "{base}/manga/{comicId}?includes[]=author&includes[]=artist&includes[]=cover_art",
+          "input": "json"
+        },
+        { "name": "feed", "url": "{base}/manga/{comicId}/feed?{feed}", "input": "json" }
+      ],
+      "comic": {
+        "title": [{ "select": "data.attributes.title", "localized": true }, { "default": "Manga" }],
+        "author": {
+          "array": { "at": "data.relationships", "key": "type", "equals": "author", "take": "attributes.name" }
+        },
+        "intro": { "select": "data.attributes.description", "localized": true, "transform": ["stripTags"] },
+        "cover": {
+          "vars": {
+            "mid": "data.id",
+            "file": {
+              "array": {
+                "at": "data.relationships",
+                "key": "type",
+                "equals": "cover_art",
+                "take": "attributes.fileName"
+              }
+            }
+          },
+          "template": "{coverCdn}/{mid}/{file}.256.jpg"
+        },
+        "status": { "select": "data.attributes.status", "equals": "completed", "then": "finish", "else": "serial" },
+        "tags": {
+          "array": {
+            "at": "data.attributes.tags",
+            "key": "attributes.group",
+            "equals": "genre",
+            "take": { "select": "attributes.name", "localized": true },
+            "first": false
+          }
+        },
+        "lastChapter": { "fromChapter": "last" }
+      },
+      "chapters": {
+        "items": { "from": "feed", "select": "data" },
+        "index": { "select": "attributes.chapter" },
+        "title": [{ "select": "attributes.title" }, { "default": "第 {index} 话" }],
+        "external": { "select": "attributes.externalUrl" }
+      }
+    },
+    "images": {
+      "input": "json",
+      "request": [
+        { "name": "feed", "url": "{base}/manga/{comicId}/feed?{feed}", "input": "json" },
+        {
+          "name": "home",
+          "vars": {
+            "chapterId": {
+              "array": {
+                "inStep": "feed",
+                "at": "data",
+                "key": "attributes.chapter",
+                "equals": "{chapterIndex}",
+                "take": "id"
+              }
+            }
+          },
+          "url": "{base}/at-home/server/{chapterId}",
+          "input": "json"
+        }
+      ],
+      "items": { "from": "home", "select": "chapter.data" },
+      "url": {
+        "vars": {
+          "cdn": { "from": "home", "select": "baseUrl" },
+          "hash": { "from": "home", "select": "chapter.hash" }
+        },
+        "template": "{cdn}/data/{hash}/{item}"
+      }
+    }
+  }
+}

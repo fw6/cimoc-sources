@@ -1,0 +1,127 @@
+{
+  "$schema": "https://mojuan.fengw.site/schema.json",
+  "schema": 1,
+  "id": "dongman",
+  "title": "咚漫",
+  "idPrefix": "dongman-",
+  "base": "https://www.dongmanmanhua.cn",
+  "headers": {
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8"
+  },
+  "hotlinkReferers": [
+    { "domain": "dongmanmanhua.cn", "referer": "https://www.dongmanmanhua.cn/" }
+  ],
+  "categories": [
+    { "label": "恋爱", "url": "https://www.dongmanmanhua.cn/LOVE" },
+    { "label": "少年", "url": "https://www.dongmanmanhua.cn/BOY" },
+    { "label": "古风", "url": "https://www.dongmanmanhua.cn/ANCIENTCHINESE" },
+    { "label": "奇幻", "url": "https://www.dongmanmanhua.cn/FANTASY" },
+    { "label": "搞笑", "url": "https://www.dongmanmanhua.cn/COMEDY" },
+    { "label": "校园", "url": "https://www.dongmanmanhua.cn/CAMPUS" },
+    { "label": "都市", "url": "https://www.dongmanmanhua.cn/METROPOLIS" },
+    { "label": "治愈", "url": "https://www.dongmanmanhua.cn/HEALING" },
+    { "label": "悬疑", "url": "https://www.dongmanmanhua.cn/SUSPENSE" },
+    { "label": "励志", "url": "https://www.dongmanmanhua.cn/INSPIRATIONAL" }
+  ],
+  "ops": {
+    "search": {
+      "request": [
+        { "name": "list", "url": "{base}/search?keyword={keyword|encode}" }
+      ],
+      "items": "li[data-title-no]",
+      "id": { "attr": "data-title-no" },
+      "limit": 24,
+      "fields": {
+        "title": [
+          { "select": "p.subj" },
+          { "select": "img", "attr": "alt" },
+          { "default": "咚漫 {itemId}" }
+        ],
+        "author": { "select": "p.author" },
+        "cover": [
+          { "select": "img", "attr": "data-src", "filter": "imageUrl" },
+          { "select": "img", "attr": "src", "filter": "imageUrl" }
+        ]
+      }
+    },
+    "category": {
+      "request": [{ "name": "list", "url": "{categoryUrl}" }],
+      "items": "li[data-title-no]",
+      "id": { "attr": "data-title-no" },
+      "limit": 24,
+      "fields": {
+        "title": [
+          { "select": "p.subj" },
+          { "select": "img", "attr": "alt" },
+          { "default": "咚漫 {itemId}" }
+        ],
+        "author": { "select": "p.author" },
+        "cover": [
+          { "select": "img", "attr": "data-src", "filter": "imageUrl" },
+          { "select": "img", "attr": "src", "filter": "imageUrl" }
+        ]
+      }
+    },
+    "detail": {
+      "request": [{ "name": "page", "url": "{base}/episodeList?titleNo={comicId}" }],
+      "comic": {
+        "title": [
+          { "select": "h1.subj" },
+          { "select": "h1" },
+          { "select": "title" },
+          { "default": "咚漫 {comicId}" }
+        ],
+        "cover": {
+          "select": "meta[property=\"og:image\"]",
+          "attr": "content",
+          "transform": ["absoluteUrl"]
+        },
+        "author": {
+          "array": {
+            "at": "span.author",
+            "take": { "transform": ["stripTags", "before:作家信息", "trim"] },
+            "first": false,
+            "join": ", "
+          }
+        },
+        "intro": { "select": "p.summary", "transform": ["stripTags"] },
+        "status": { "default": "serial" },
+        "lastChapter": { "fromChapter": "first" }
+      },
+      "chapters": {
+        "items": "a[href*=\"/viewer?\"]",
+        "index": { "attr": "href", "transform": ["digitsAfter:episode_no="] },
+        "title": [
+          { "select": "span.subj span" },
+          { "select": "img", "attr": "alt" },
+          { "default": "第 {index} 话" }
+        ],
+        "sort": "desc"
+      }
+    },
+    "images": {
+      "request": [
+        { "name": "list", "url": "{base}/episodeList?titleNo={comicId}" },
+        {
+          "name": "viewer",
+          "vars": {
+            "viewerUrl": {
+              "array": {
+                "inStep": "list",
+                "at": "a[href*=\"/viewer?\"]",
+                "key": { "attr": "href", "transform": ["digitsAfter:episode_no="] },
+                "equals": "{chapterIndex}",
+                "take": { "attr": "href", "transform": ["absoluteUrl"] }
+              }
+            }
+          },
+          "url": "{viewerUrl}"
+        }
+      ],
+      "items": { "from": "viewer", "select": "img._images" },
+      "url": { "attr": "data-url" }
+    }
+  }
+}

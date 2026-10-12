@@ -1,0 +1,139 @@
+{
+  "$schema": "https://mojuan.fengw.site/schema.json",
+  "schema": 1,
+  "id": "baozimh",
+  "title": "包子漫画",
+  "idPrefix": "baozimh-",
+  "base": "https://cn.baozimh.com",
+  "renderChannel": true,
+  "headers": {
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8"
+  },
+  "categories": [
+    { "label": "热血", "url": "https://cn.baozimh.com/classify?type=rexue&region=all&state=all&filter=%2a" },
+    { "label": "搞笑", "url": "https://cn.baozimh.com/classify?type=gaoxiao&region=all&state=all&filter=%2a" },
+    { "label": "恋爱", "url": "https://cn.baozimh.com/classify?type=lianai&region=all&state=all&filter=%2a" },
+    { "label": "纯爱", "url": "https://cn.baozimh.com/classify?type=chunai&region=all&state=all&filter=%2a" },
+    { "label": "古风", "url": "https://cn.baozimh.com/classify?type=gufeng&region=all&state=all&filter=%2a" },
+    { "label": "异能", "url": "https://cn.baozimh.com/classify?type=yineng&region=all&state=all&filter=%2a" },
+    { "label": "悬疑", "url": "https://cn.baozimh.com/classify?type=xuanyi&region=all&state=all&filter=%2a" },
+    { "label": "剧情", "url": "https://cn.baozimh.com/classify?type=juqing&region=all&state=all&filter=%2a" },
+    { "label": "科幻", "url": "https://cn.baozimh.com/classify?type=kehuan&region=all&state=all&filter=%2a" },
+    { "label": "奇幻", "url": "https://cn.baozimh.com/classify?type=qihuan&region=all&state=all&filter=%2a" },
+    { "label": "玄幻", "url": "https://cn.baozimh.com/classify?type=xuanhuan&region=all&state=all&filter=%2a" },
+    { "label": "穿越", "url": "https://cn.baozimh.com/classify?type=chuanyue&region=all&state=all&filter=%2a" },
+    { "label": "冒险", "url": "https://cn.baozimh.com/classify?type=mouxian&region=all&state=all&filter=%2a" },
+    { "label": "推理", "url": "https://cn.baozimh.com/classify?type=tuili&region=all&state=all&filter=%2a" },
+    { "label": "武侠", "url": "https://cn.baozimh.com/classify?type=wuxia&region=all&state=all&filter=%2a" },
+    { "label": "格斗", "url": "https://cn.baozimh.com/classify?type=gedou&region=all&state=all&filter=%2a" },
+    { "label": "战争", "url": "https://cn.baozimh.com/classify?type=zhanzheng&region=all&state=all&filter=%2a" },
+    { "label": "大女主", "url": "https://cn.baozimh.com/classify?type=danuzhu&region=all&state=all&filter=%2a" },
+    { "label": "都市", "url": "https://cn.baozimh.com/classify?type=dushi&region=all&state=all&filter=%2a" },
+    { "label": "总裁", "url": "https://cn.baozimh.com/classify?type=zongcai&region=all&state=all&filter=%2a" },
+    { "label": "后宫", "url": "https://cn.baozimh.com/classify?type=hougong&region=all&state=all&filter=%2a" },
+    { "label": "日常", "url": "https://cn.baozimh.com/classify?type=richang&region=all&state=all&filter=%2a" },
+    { "label": "韩漫", "url": "https://cn.baozimh.com/classify?type=hanman&region=all&state=all&filter=%2a" },
+    { "label": "少年", "url": "https://cn.baozimh.com/classify?type=shaonian&region=all&state=all&filter=%2a" },
+    { "label": "其他", "url": "https://cn.baozimh.com/classify?type=qita&region=all&state=all&filter=%2a" }
+  ],
+  "ops": {
+    "search": {
+      "request": [{ "name": "list", "url": "{base}/search?q={keyword|encode}" }],
+      "items": "div.comics-card",
+      "id": {
+        "select": "a.comics-card__poster",
+        "attr": "href",
+        "transform": ["stripPrefix:/comic/"]
+      },
+      "fields": {
+        "title": [
+          { "select": "a.comics-card__poster", "attr": "title" },
+          { "select": "a.comics-card__info h3" },
+          { "default": "{itemId}" }
+        ],
+        "cover": { "select": "a.comics-card__poster amp-img", "attr": "src" },
+        "author": { "select": "a.comics-card__info small.tags" }
+      }
+    },
+    "category": {
+      "request": [{ "name": "list", "url": "{categoryUrl}" }],
+      "items": "div.comics-card",
+      "id": {
+        "select": "a.comics-card__poster",
+        "attr": "href",
+        "transform": ["stripPrefix:/comic/"]
+      },
+      "fields": {
+        "title": [
+          { "select": "a.comics-card__poster", "attr": "title" },
+          { "select": "a.comics-card__info h3" },
+          { "default": "{itemId}" }
+        ],
+        "cover": { "select": "a.comics-card__poster amp-img", "attr": "src" },
+        "author": { "select": "a.comics-card__info small.tags" }
+      }
+    },
+    "detail": {
+      "request": [{ "name": "page", "url": "{base}/comic/{comicId}" }],
+      "comic": {
+        "title": [
+          { "select": "h1.comics-detail__title" },
+          { "default": "包子漫画 {comicId}" }
+        ],
+        "author": { "select": "h2.comics-detail__author" },
+        "intro": { "select": "p.comics-detail__desc", "transform": ["stripTags"] },
+        "cover": { "select": "div.de-info__box amp-img", "attr": "src" },
+        "status": [
+          { "select": ".tag-list span.tag", "contains": "完结", "then": "finish", "else": "" },
+          { "select": ".tag-list span.tag", "contains": "完結", "then": "finish", "else": "" },
+          { "select": ".tag-list span.tag", "contains": "连载", "then": "serial", "else": "" },
+          { "select": ".tag-list span.tag", "contains": "連載", "then": "serial", "else": "" }
+        ],
+        "lastChapter": {
+          "array": {
+            "at": "span",
+            "contains": "最新：",
+            "take": { "select": "a" }
+          }
+        },
+        "tags": {
+          "array": {
+            "at": ".tag-list span.tag",
+            "take": { "transform": ["trim"] },
+            "first": false,
+            "skip": 1
+          }
+        }
+      },
+      "chapters": {
+        "items": "a.comics-chapters__item[href^=\"/user/page_direct?\"]",
+        "index": { "default": "position" },
+        "dedupBy": {
+          "vars": {
+            "sec": { "attr": "href", "transform": ["param:section_slot"] },
+            "slot": { "attr": "href", "transform": ["param:chapter_slot"] }
+          },
+          "template": "{sec}:{slot}"
+        },
+        "sortBy": [
+          { "attr": "href", "transform": ["param:section_slot"] },
+          { "attr": "href", "transform": ["param:chapter_slot"] }
+        ],
+        "title": [{ "select": "span", "transform": ["trim"] }],
+        "hidden": {
+          "pageUrl": {
+            "vars": { "href": { "attr": "href" } },
+            "template": "{base}{href}"
+          }
+        }
+      }
+    },
+    "images": {
+      "request": [{ "name": "page", "url": "{pageUrl}" }],
+      "items": "amp-img[id^=\"chapter-img-\"]",
+      "url": { "attr": "src" }
+    }
+  }
+}

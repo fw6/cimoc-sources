@@ -1,0 +1,143 @@
+{
+  "$schema": "https://mojuan.fengw.site/schema.json",
+  "schema": 1,
+  "id": "copymanga",
+  "title": "Copymanga",
+  "idPrefix": "copymanga-",
+  "base": "https://api.mangacopy.com",
+  "headers": {
+    "User-Agent": "Mojuan/1.0",
+    "Accept": "application/json",
+    "platform": "3",
+    "version": "3.0.0",
+    "hc-lang": "zh-hans"
+  },
+  "categories": [
+    { "label": "冒险", "url": "https://api.mangacopy.com/api/v3/comics?platform=3&limit=20&offset=0&theme=maoxian" },
+    { "label": "奇幻", "url": "https://api.mangacopy.com/api/v3/comics?platform=3&limit=20&offset=0&theme=qihuan" },
+    { "label": "校园", "url": "https://api.mangacopy.com/api/v3/comics?platform=3&limit=20&offset=0&theme=xiaoyuan" },
+    { "label": "百合", "url": "https://api.mangacopy.com/api/v3/comics?platform=3&limit=20&offset=0&theme=baihe" },
+    { "label": "科幻", "url": "https://api.mangacopy.com/api/v3/comics?platform=3&limit=20&offset=0&theme=kehuan" },
+    { "label": "耽美", "url": "https://api.mangacopy.com/api/v3/comics?platform=3&limit=20&offset=0&theme=danmei" },
+    { "label": "搞笑", "url": "https://api.mangacopy.com/api/v3/comics?platform=3&limit=20&offset=0&theme=gaoxiao" },
+    { "label": "悬疑", "url": "https://api.mangacopy.com/api/v3/comics?platform=3&limit=20&offset=0&theme=xuanyi" },
+    { "label": "热血", "url": "https://api.mangacopy.com/api/v3/comics?platform=3&limit=20&offset=0&theme=rexue" },
+    { "label": "竞技", "url": "https://api.mangacopy.com/api/v3/comics?platform=3&limit=20&offset=0&theme=jingji" },
+    { "label": "生活", "url": "https://api.mangacopy.com/api/v3/comics?platform=3&limit=20&offset=0&theme=shenghuo" },
+    { "label": "侦探", "url": "https://api.mangacopy.com/api/v3/comics?platform=3&limit=20&offset=0&theme=zhentan" },
+    { "label": "战争", "url": "https://api.mangacopy.com/api/v3/comics?platform=3&limit=20&offset=0&theme=zhanzheng" },
+    { "label": "历史", "url": "https://api.mangacopy.com/api/v3/comics?platform=3&limit=20&offset=0&theme=lishi" },
+    { "label": "美食", "url": "https://api.mangacopy.com/api/v3/comics?platform=3&limit=20&offset=0&theme=meishi" },
+    { "label": "武侠", "url": "https://api.mangacopy.com/api/v3/comics?platform=3&limit=20&offset=0&theme=wuxia" },
+    { "label": "恐怖", "url": "https://api.mangacopy.com/api/v3/comics?platform=3&limit=20&offset=0&theme=kongbu" }
+  ],
+  "ops": {
+    "search": {
+      "input": "json",
+      "request": [
+        {
+          "name": "list",
+          "url": "{base}/api/v3/search/comic?format=json&platform=3&q={keyword|encode}&offset=0&limit=20",
+          "input": "json"
+        }
+      ],
+      "items": "results.list",
+      "id": "path_word",
+      "limit": 20,
+      "fields": {
+        "title": "name",
+        "author": { "array": { "at": "author", "take": "name", "first": false, "join": ", " } },
+        "intro": "brief",
+        "cover": "cover",
+        "status": [
+          { "select": "status", "filter": "nonEmpty", "contains": "完结", "then": "finish", "else": "serial" },
+          { "select": "status.display", "contains": "完结", "then": "finish", "else": "serial" }
+        ],
+        "updateTime": "datetime_updated",
+        "lastChapter": "last_chapter.name",
+        "tags": { "array": { "at": "theme", "take": "name", "first": false } }
+      }
+    },
+    "category": {
+      "input": "json",
+      "request": [{ "name": "list", "url": "{categoryUrl}", "input": "json" }],
+      "items": "results.list",
+      "id": "path_word",
+      "limit": 20,
+      "fields": {
+        "title": "name",
+        "author": { "array": { "at": "author", "take": "name", "first": false, "join": ", " } },
+        "intro": "brief",
+        "cover": "cover",
+        "status": [
+          { "select": "status", "filter": "nonEmpty", "contains": "完结", "then": "finish", "else": "serial" },
+          { "select": "status.display", "contains": "完结", "then": "finish", "else": "serial" }
+        ],
+        "updateTime": "datetime_updated",
+        "lastChapter": "last_chapter.name",
+        "tags": { "array": { "at": "theme", "take": "name", "first": false } }
+      }
+    },
+    "detail": {
+      "input": "json",
+      "request": [
+        { "name": "comic", "url": "{base}/api/v3/comic2/{comicId}?platform=3", "input": "json" },
+        {
+          "name": "feed",
+          "url": "{base}/api/v3/comic/{comicId}/group/default/chapters?limit=1000&offset=0",
+          "input": "json"
+        }
+      ],
+      "comic": {
+        "title": "results.comic.name",
+        "author": { "array": { "at": "results.comic.author", "take": "name", "first": false, "join": ", " } },
+        "intro": "results.comic.brief",
+        "cover": "results.comic.cover",
+        "status": [
+          { "select": "results.comic.status", "filter": "nonEmpty", "contains": "完结", "then": "finish", "else": "serial" },
+          { "select": "results.comic.status.display", "contains": "完结", "then": "finish", "else": "serial" }
+        ],
+        "updateTime": "results.comic.datetime_updated",
+        "lastChapter": [
+          { "select": "results.comic.last_chapter.name" },
+          { "fromChapter": "last" }
+        ],
+        "tags": { "array": { "at": "results.comic.theme", "take": "name", "first": false } }
+      },
+      "chapters": {
+        "items": { "from": "feed", "select": "results.list" },
+        "index": "index",
+        "title": [{ "select": "name" }, { "default": "第 {index} 话" }],
+        "sort": "asc"
+      }
+    },
+    "images": {
+      "input": "json",
+      "request": [
+        {
+          "name": "feed",
+          "url": "{base}/api/v3/comic/{comicId}/group/default/chapters?limit=1000&offset=0",
+          "input": "json"
+        },
+        {
+          "name": "chapter",
+          "vars": {
+            "uuid": {
+              "array": {
+                "inStep": "feed",
+                "at": "results.list",
+                "key": "index",
+                "equals": "{chapterIndex}",
+                "take": "uuid"
+              }
+            }
+          },
+          "url": "{base}/api/v3/comic/{comicId}/chapter2/{uuid}?platform=3",
+          "input": "json"
+        }
+      ],
+      "items": { "from": "chapter", "select": "results.chapter.contents" },
+      "url": "url"
+    }
+  }
+}

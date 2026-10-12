@@ -1,0 +1,116 @@
+{
+  "$schema": "https://mojuan.fengw.site/schema.json",
+  "schema": 1,
+  "id": "nnhanman",
+  "title": "鸟鸟韩漫",
+  "idPrefix": "nnhanman-",
+  "base": "https://nnhanman.xyz",
+  "renderChannel": true,
+  "headers": {
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8"
+  },
+  "categories": [
+    { "label": "最新更新", "url": "https://nnhanman.xyz/comics/all/ob/time/st/all" },
+    { "label": "热门", "url": "https://nnhanman.xyz/comics/all/ob/hits/st/all" },
+    { "label": "已完结", "url": "https://nnhanman.xyz/comics/all/ob/time/st/completed" },
+    { "label": "连载中", "url": "https://nnhanman.xyz/comics/all/ob/time/st/serialized" },
+    { "label": "正妹", "url": "https://nnhanman.xyz/comics/%E6%AD%A3%E5%A6%B9/ob/time/st/all" },
+    { "label": "恋爱", "url": "https://nnhanman.xyz/comics/%E6%81%8B%E7%88%B1/ob/time/st/all" },
+    { "label": "出版漫画", "url": "https://nnhanman.xyz/comics/%E5%87%BA%E7%89%88%E6%BC%AB%E7%94%BB/ob/time/st/all" },
+    { "label": "肉慾", "url": "https://nnhanman.xyz/comics/%E8%82%89%E6%85%BE/ob/time/st/all" },
+    { "label": "浪漫", "url": "https://nnhanman.xyz/comics/%E6%B5%AA%E6%BC%AB/ob/time/st/all" },
+    { "label": "大尺度", "url": "https://nnhanman.xyz/comics/%E5%A4%A7%E5%B0%BA%E5%BA%A6/ob/time/st/all" },
+    { "label": "巨乳", "url": "https://nnhanman.xyz/comics/%E5%B7%A8%E4%B9%B3/ob/time/st/all" },
+    { "label": "有夫之婦", "url": "https://nnhanman.xyz/comics/%E6%9C%89%E5%A4%AB%E4%B9%8B%E5%A9%A6/ob/time/st/all" },
+    { "label": "女大生", "url": "https://nnhanman.xyz/comics/%E5%A5%B3%E5%A4%A7%E7%94%9F/ob/time/st/all" },
+    { "label": "狗血劇", "url": "https://nnhanman.xyz/comics/%E7%8B%97%E8%A1%80%E5%8A%87/ob/time/st/all" },
+    { "label": "同居", "url": "https://nnhanman.xyz/comics/%E5%90%8C%E5%B1%85/ob/time/st/all" },
+    { "label": "好友", "url": "https://nnhanman.xyz/comics/%E5%A5%BD%E5%8F%8B/ob/time/st/all" },
+    { "label": "調教", "url": "https://nnhanman.xyz/comics/%E8%AA%BF%E6%95%99/ob/time/st/all" },
+    { "label": "动作", "url": "https://nnhanman.xyz/comics/%E5%8A%A8%E4%BD%9C/ob/time/st/all" },
+    { "label": "後宮", "url": "https://nnhanman.xyz/comics/%E5%BE%8C%E5%AE%AE/ob/time/st/all" },
+    { "label": "不倫", "url": "https://nnhanman.xyz/comics/%E4%B8%8D%E5%80%AB/ob/time/st/all" },
+    { "label": "3D", "url": "https://nnhanman.xyz/comics/3D/ob/time/st/all" },
+    { "label": "校園", "url": "https://nnhanman.xyz/comics/%E6%A0%A1%E5%9C%92/ob/time/st/all" },
+    { "label": "耽美", "url": "https://nnhanman.xyz/comics/%E8%80%BD%E7%BE%8E/ob/time/st/all" },
+    { "label": "日漫", "url": "https://nnhanman.xyz/comics/%E6%97%A5%E6%BC%AB/ob/time/st/all" }
+  ],
+  "ops": {
+    "search": {
+      "request": [
+        { "name": "list", "url": "{base}/catalog.php?key={keyword|encode}" }
+      ],
+      "items": "ul.col_3_1 li",
+      "where": { "select": "a.ImgA", "attr": "href", "filter": "nonEmpty" },
+      "id": { "select": "a.ImgA", "attr": "href", "transform": ["after:/comic/", "before:.html"] },
+      "fields": {
+        "title": [
+          { "select": "a.ImgA", "attr": "title" },
+          { "select": "a.txtA" },
+          { "select": "img", "attr": "alt" },
+          { "default": "{itemId}" }
+        ],
+        "cover": { "select": "img", "attr": "src" },
+        "lastChapter": [
+          { "select": "span.info", "filter": "contains:话" },
+          { "select": "span.info", "filter": "contains:話" }
+        ]
+      }
+    },
+    "category": {
+      "request": [{ "name": "list", "url": "{categoryUrl}" }],
+      "items": "ul.col_3_1 li",
+      "where": { "select": "a.ImgA", "attr": "href", "filter": "nonEmpty" },
+      "id": { "select": "a.ImgA", "attr": "href", "transform": ["after:/comic/", "before:.html"] },
+      "fields": {
+        "title": [
+          { "select": "a.ImgA", "attr": "title" },
+          { "select": "a.txtA" },
+          { "select": "img", "attr": "alt" },
+          { "default": "{itemId}" }
+        ],
+        "cover": { "select": "img", "attr": "src" },
+        "lastChapter": [
+          { "select": "span.info", "filter": "contains:话" },
+          { "select": "span.info", "filter": "contains:話" }
+        ]
+      }
+    },
+    "detail": {
+      "request": [{ "name": "page", "url": "{base}/comic/{comicId}.html" }],
+      "comic": {
+        "title": [
+          { "select": "h1", "transform": ["stripPrefix:《", "stripSuffix:》"] },
+          { "default": "{comicId}" }
+        ],
+        "cover": { "select": "div#Cover img", "attr": "src" },
+        "author": { "select": "p.txtItme", "transform": ["trim"] },
+        "intro": { "select": "p.txtDesc", "transform": ["stripPrefix:介绍:"] },
+        "status": { "select": "span.date", "contains": "已完结", "then": "finish", "else": "serial" },
+        "lastChapter": { "fromChapter": "last" },
+        "tags": {
+          "array": {
+            "at": "a[href^=\"/comics/\"]",
+            "take": { "transform": ["trim"] },
+            "first": false
+          }
+        }
+      },
+      "chapters": {
+        "items": "ul[id^=\"mh-chapter-list\"] a[href*=\"/chapter-\"]",
+        "index": { "attr": "href", "transform": ["after:chapter-", "before:.html"] },
+        "title": { "select": "span" },
+        "sort": "asc"
+      }
+    },
+    "images": {
+      "request": [
+        { "name": "page", "url": "{base}/comic/{comicId}/chapter-{chapterIndex}.html" }
+      ],
+      "items": "img[data-index]",
+      "url": [{ "attr": "data-src", "filter": "nonEmpty" }, { "attr": "src" }]
+    }
+  }
+}

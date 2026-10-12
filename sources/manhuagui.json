@@ -1,0 +1,145 @@
+{
+  "$schema": "https://mojuan.fengw.site/schema.json",
+  "schema": 1,
+  "id": "manhuagui",
+  "title": "漫画柜",
+  "idPrefix": "manhuagui-",
+  "base": "https://www.manhuagui.com",
+  "vars": {
+    "imgHost": "https://us.hamreus.com"
+  },
+  "headers": {
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8"
+  },
+  "hotlinkReferers": [
+    { "domain": "hamreus.com", "referer": "https://www.manhuagui.com/" },
+    { "domain": "mhgui.com", "referer": "https://www.manhuagui.com/" }
+  ],
+  "categories": [
+    { "label": "热血", "url": "https://www.manhuagui.com/list/rexue/" },
+    { "label": "少年", "url": "https://www.manhuagui.com/list/shaonian/" },
+    { "label": "少女", "url": "https://www.manhuagui.com/list/shaonv/" },
+    { "label": "青年", "url": "https://www.manhuagui.com/list/qingnian/" },
+    { "label": "爱情", "url": "https://www.manhuagui.com/list/aiqing/" },
+    { "label": "百合", "url": "https://www.manhuagui.com/list/baihe/" },
+    { "label": "耽美", "url": "https://www.manhuagui.com/list/danmei/" },
+    { "label": "后宫", "url": "https://www.manhuagui.com/list/hougong/" },
+    { "label": "搞笑", "url": "https://www.manhuagui.com/list/gaoxiao/" },
+    { "label": "科幻", "url": "https://www.manhuagui.com/list/kehuan/" },
+    { "label": "奇幻", "url": "https://www.manhuagui.com/list/mohuan/" },
+    { "label": "魔法", "url": "https://www.manhuagui.com/list/mofa/" },
+    { "label": "冒险", "url": "https://www.manhuagui.com/list/maoxian/" },
+    { "label": "悬疑", "url": "https://www.manhuagui.com/list/xuanyi/" },
+    { "label": "推理", "url": "https://www.manhuagui.com/list/tuili/" },
+    { "label": "恐怖", "url": "https://www.manhuagui.com/list/kongbu/" },
+    { "label": "神鬼", "url": "https://www.manhuagui.com/list/shengui/" },
+    { "label": "历史", "url": "https://www.manhuagui.com/list/lishi/" },
+    { "label": "战争", "url": "https://www.manhuagui.com/list/zhanzheng/" },
+    { "label": "武侠", "url": "https://www.manhuagui.com/list/wuxia/" },
+    { "label": "竞技", "url": "https://www.manhuagui.com/list/jingji/" },
+    { "label": "机战", "url": "https://www.manhuagui.com/list/jizhan/" },
+    { "label": "格斗", "url": "https://www.manhuagui.com/list/gedou/" },
+    { "label": "体育", "url": "https://www.manhuagui.com/list/tiyu/" },
+    { "label": "校园", "url": "https://www.manhuagui.com/list/xiaoyuan/" },
+    { "label": "职场", "url": "https://www.manhuagui.com/list/zhichang/" },
+    { "label": "生活", "url": "https://www.manhuagui.com/list/shenghuo/" },
+    { "label": "美食", "url": "https://www.manhuagui.com/list/meishi/" },
+    { "label": "励志", "url": "https://www.manhuagui.com/list/lizhi/" },
+    { "label": "治愈", "url": "https://www.manhuagui.com/list/zhiyu/" },
+    { "label": "萌系", "url": "https://www.manhuagui.com/list/mengxi/" },
+    { "label": "伪娘", "url": "https://www.manhuagui.com/list/weiniang/" },
+    { "label": "侦探", "url": "https://www.manhuagui.com/list/zhentan/" },
+    { "label": "黑道", "url": "https://www.manhuagui.com/list/heidao/" },
+    { "label": "儿童", "url": "https://www.manhuagui.com/list/ertong/" },
+    { "label": "四格", "url": "https://www.manhuagui.com/list/sige/" },
+    { "label": "音乐", "url": "https://www.manhuagui.com/list/yinyue/" },
+    { "label": "舞蹈", "url": "https://www.manhuagui.com/list/wudao/" }
+  ],
+  "ops": {
+    "search": {
+      "request": [
+        { "name": "list", "url": "{base}/s/{keyword|encode}_p1.html" }
+      ],
+      "items": "li.cf",
+      "id": { "select": "a.bcover", "attr": "href", "transform": ["after:/comic/", "before:/"] },
+      "limit": 24,
+      "fields": {
+        "title": [
+          { "select": "a.bcover", "attr": "title" },
+          { "select": "img", "attr": "alt" },
+          { "default": "漫画柜 {itemId}" }
+        ],
+        "cover": { "select": "img", "attr": "src", "transform": ["absoluteUrl"] },
+        "author": {
+          "array": {
+            "at": "dd.tags span",
+            "contains": "作者：",
+            "take": { "select": "a" }
+          }
+        },
+        "intro": { "select": "dd.intro", "transform": ["after:简介：", "trim"] },
+        "status": { "contains": "已完结", "then": "finish", "else": "serial" },
+        "lastChapter": { "select": "span.tt" }
+      }
+    },
+    "category": {
+      "request": [{ "name": "list", "url": "{categoryUrl}" }],
+      "items": "li.cf",
+      "id": { "select": "a.bcover", "attr": "href", "transform": ["after:/comic/", "before:/"] },
+      "limit": 24,
+      "fields": {
+        "title": [
+          { "select": "a.bcover", "attr": "title" },
+          { "select": "img", "attr": "alt" },
+          { "default": "漫画柜 {itemId}" }
+        ],
+        "cover": { "select": "img", "attr": "src", "transform": ["absoluteUrl"] },
+        "author": {
+          "array": {
+            "at": "dd.tags span",
+            "contains": "作者：",
+            "take": { "select": "a" }
+          }
+        },
+        "intro": { "select": "dd.intro", "transform": ["after:简介：", "trim"] },
+        "status": { "contains": "已完结", "then": "finish", "else": "serial" },
+        "lastChapter": { "select": "span.tt" }
+      }
+    },
+    "detail": {
+      "request": [{ "name": "page", "url": "{base}/comic/{comicId}/" }],
+      "comic": {
+        "title": [
+          { "select": "h1" },
+          { "select": "title", "filter": "contains:漫画_", "transform": ["before:漫画_"] },
+          { "select": "title" },
+          { "default": "漫画柜 {comicId}" }
+        ],
+        "cover": { "select": "p.hcover img", "attr": "src", "transform": ["absoluteUrl"] },
+        "author": {
+          "array": {
+            "at": "li span",
+            "contains": "作者：",
+            "take": { "select": "a" }
+          }
+        },
+        "intro": { "select": "div#intro-all", "transform": ["stripTags"] },
+        "status": { "contains": "已完结", "then": "finish", "else": "serial" },
+        "lastChapter": { "fromChapter": "last" }
+      },
+      "chapters": {
+        "items": "div[id^=\"chapter-list-\"] a[href$=\".html\"]",
+        "where": { "attr": "title", "filter": "nonEmpty" },
+        "index": { "attr": "href", "transform": ["after:/comic/", "after:/", "before:.html"] },
+        "title": { "attr": "title" },
+        "sort": "asc"
+      }
+    },
+    "images": {
+      "request": [{ "name": "page", "url": "{base}/comic/{comicId}/{chapterIndex}.html" }],
+      "script": "function (api) {\n  var html = api.responses.page || '';\n  var marker = 'eval(function(p,a,c,k,e,d)';\n  var m = html.indexOf(marker);\n  if (m < 0) return [];\n  var s = html.slice(m);\n  var ps = s.indexOf(\"}('\");\n  if (ps < 0) return [];\n  ps += 3;\n  var b0 = s.indexOf(\"',\", ps);\n  if (b0 < 0) return [];\n  var p = s.slice(ps, b0);\n  var i = b0 + 2;\n  var aStr = readDigits(s, i);\n  i += aStr.length;\n  if (s[i] === ',') i++;\n  var cStr = readDigits(s, i);\n  i += cStr.length;\n  if (s[i] === ',') i++;\n  if (s[i] === \"'\") i++;\n  var kEnd = s.indexOf(\"'.split('|')\", i);\n  if (kEnd < 0) return [];\n  var k = s.slice(i, kEnd).split('|');\n  var a = Number(aStr);\n  var c = Number(cStr);\n  if (!a || !c) return [];\n  var chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';\n  var d = {};\n  for (var n = 0; n < c; n++) {\n    var key = packerKey(n, a, chars);\n    d[key] = k[n] || key;\n  }\n  var text = '';\n  var buf = '';\n  var token = false;\n  for (var j = 0; j < p.length; j++) {\n    var ch = p[j];\n    var isWord = isWordChar(ch);\n    if (isWord !== token) {\n      if (token) text += d[buf] !== undefined ? d[buf] : buf;\n      else text += buf;\n      buf = ch;\n      token = isWord;\n    } else {\n      buf += ch;\n    }\n  }\n  if (buf) text += token ? (d[buf] !== undefined ? d[buf] : buf) : buf;\n  var path = jsonString(text, 'path');\n  var files = jsonArray(text, 'files');\n  var e = jsonString(text, 'e');\n  var mm = jsonString(text, 'm');\n  if (!path || files.length === 0) return [];\n  var out = [];\n  for (var x = 0; x < files.length; x++) {\n    var u = 'https://us.hamreus.com' + path + files[x];\n    if (e || mm) u += '?e=' + e + '&m=' + mm;\n    out.push(u);\n  }\n  return out;\n\n  function readDigits(str, at) {\n    var out = '';\n    while (at < str.length && str[at] >= '0' && str[at] <= '9') {\n      out += str[at];\n      at++;\n    }\n    return out;\n  }\n\n  function isWordChar(ch) {\n    return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9') || ch === '_';\n  }\n\n  function packerKey(value, base, alphabet) {\n    var out = '';\n    for (;;) {\n      var rem = value % base;\n      out = (rem > 35 ? String.fromCharCode(rem + 29) : alphabet[rem]) + out;\n      value = Math.floor(value / base);\n      if (value === 0) break;\n    }\n    return out;\n  }\n\n  function jsonString(text, key) {\n    var marker = '\"' + key + '\":\"';\n    var a = text.indexOf(marker);\n    if (a < 0) return '';\n    a += marker.length;\n    var b = text.indexOf('\"', a);\n    return b < 0 ? '' : text.slice(a, b);\n  }\n\n  function jsonArray(text, key) {\n    var marker = '\"' + key + '\":[';\n    var a = text.indexOf(marker);\n    if (a < 0) return [];\n    var out = [];\n    var i = a + marker.length;\n    for (;;) {\n      if (text[i] === '\"') {\n        var j = text.indexOf('\"', i + 1);\n        if (j < 0) break;\n        out.push(text.slice(i + 1, j));\n        i = j + 1;\n      } else if (text[i] === ']' || text[i] === undefined) {\n        break;\n      } else {\n        i++;\n      }\n    }\n    return out;\n  }\n}"
+    }
+  }
+}

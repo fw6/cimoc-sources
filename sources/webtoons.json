@@ -1,0 +1,121 @@
+{
+  "$schema": "https://mojuan.fengw.site/schema.json",
+  "schema": 1,
+  "id": "webtoons",
+  "title": "Webtoons",
+  "idPrefix": "webtoons-",
+  "base": "https://www.webtoons.com/en",
+  "headers": {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "en-US,en;q=0.9"
+  },
+  "headersByOp": {
+    "images": {
+      "Referer": ["{seriesUrl}", "{base}/any/list?title_no={comicId}"]
+    }
+  },
+  "hotlinkReferers": [
+    { "domain": "pstatic.net", "referer": "https://www.webtoons.com/" }
+  ],
+  "categories": [
+    { "label": "动作", "url": "https://www.webtoons.com/en/genres/action" },
+    { "label": "恋爱", "url": "https://www.webtoons.com/en/genres/romance" },
+    { "label": "搞笑", "url": "https://www.webtoons.com/en/genres/comedy" },
+    { "label": "剧情", "url": "https://www.webtoons.com/en/genres/drama" },
+    { "label": "奇幻", "url": "https://www.webtoons.com/en/genres/fantasy" },
+    { "label": "恐怖", "url": "https://www.webtoons.com/en/genres/horror" },
+    { "label": "科幻", "url": "https://www.webtoons.com/en/genres/sci-fi" },
+    { "label": "体育", "url": "https://www.webtoons.com/en/genres/sports" }
+  ],
+  "ops": {
+    "search": {
+      "request": [
+        { "name": "list", "url": "{base}/search?keyword={keyword|encode}" }
+      ],
+      "items": "a._card_item[href*=\"/list?title_no=\"]",
+      "id": { "attr": "href", "transform": ["digitsAfter:title_no="] },
+      "limit": 24,
+      "fields": {
+        "title": [
+          { "select": "strong.title" },
+          { "select": "p.subj" },
+          { "select": "img", "attr": "alt" },
+          { "attr": "title" },
+          { "default": "Webtoon {itemId}" }
+        ],
+        "cover": [
+          { "select": "img", "attr": "data-src", "filter": "imageUrl" },
+          { "select": "img", "attr": "src", "filter": "imageUrl" }
+        ]
+      },
+      "hidden": { "seriesUrl": { "attr": "href" } }
+    },
+    "category": {
+      "request": [{ "name": "list", "url": "{categoryUrl}" }],
+      "items": "a._card_item[href*=\"/list?title_no=\"]",
+      "id": { "attr": "href", "transform": ["digitsAfter:title_no="] },
+      "limit": 24,
+      "fields": {
+        "title": [
+          { "select": "strong.title" },
+          { "select": "p.subj" },
+          { "select": "img", "attr": "alt" },
+          { "attr": "title" },
+          { "default": "Webtoon {itemId}" }
+        ],
+        "cover": [
+          { "select": "img", "attr": "data-src", "filter": "imageUrl" },
+          { "select": "img", "attr": "src", "filter": "imageUrl" }
+        ]
+      },
+      "hidden": { "seriesUrl": { "attr": "href" } }
+    },
+    "detail": {
+      "request": [
+        { "name": "page", "url": ["{seriesUrl}", "{base}/any/list?title_no={comicId}"] }
+      ],
+      "comic": {
+        "title": [
+          { "select": "h1.subj" },
+          { "select": "h1" },
+          { "select": "title" },
+          { "default": "Webtoon {comicId}" }
+        ],
+        "cover": [
+          { "select": "meta[property=\"og:image\"]", "attr": "content" },
+          { "select": "img[src*=\"thumb\"]", "attr": "src" },
+          { "select": "img[src*=\"webtoon-phinf\"]", "attr": "src" }
+        ],
+        "author": { "select": "div.author", "transform": ["firstOn:/", "trim"] },
+        "intro": { "select": "p.summary" },
+        "status": { "default": "serial" },
+        "tags": { "default": "Webtoons" },
+        "lastChapter": { "fromChapter": "first" }
+      },
+      "chapters": {
+        "items": "a[href*=\"/viewer?\"]",
+        "index": { "attr": "href", "transform": ["digitsAfter:episode_no="] },
+        "title": [
+          { "select": "img", "attr": "alt" },
+          { "select": "span.subj span" },
+          { "default": "第 {index} 话" }
+        ],
+        "sort": "desc"
+      }
+    },
+    "images": {
+      "request": [
+        {
+          "name": "viewer",
+          "url": [
+            "{base}/{seriesUrl|after:https://www.webtoons.com/en/|before:/list?}/episode-{chapterIndex}/viewer?title_no={comicId}&episode_no={chapterIndex}",
+            "{base}/any/episode-{chapterIndex}/viewer?title_no={comicId}&episode_no={chapterIndex}"
+          ]
+        }
+      ],
+      "items": "img._images",
+      "url": { "attr": "data-url" }
+    }
+  }
+}

@@ -1,0 +1,653 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SourceDoc",
+  "description": "一份源文档。",
+  "type": "object",
+  "required": [
+    "id",
+    "ops",
+    "schema",
+    "title"
+  ],
+  "properties": {
+    "$schema": {
+      "description": "JSON Schema 的地址（编辑器补全用；校验时忽略）。",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "base": {
+      "description": "站点根，模板里可用 `{base}`。",
+      "type": "string"
+    },
+    "categories": {
+      "description": "静态分类表：`categories` op 输出 label 列表，`category` op 的 URL 取命中条目的 url。",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Category"
+      }
+    },
+    "headers": {
+      "description": "基础请求头。",
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/TemplateChain"
+      }
+    },
+    "headersByOp": {
+      "description": "按 op 覆盖/追加的请求头。",
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/definitions/TemplateChain"
+        }
+      }
+    },
+    "hotlinkReferers": {
+      "description": "图片热链对。",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/HotlinkReferer"
+      }
+    },
+    "id": {
+      "description": "sourceId，与源仓库的键一致。",
+      "type": "string"
+    },
+    "idPrefix": {
+      "description": "漫画 id 前缀：进入的 comicId 去掉它，产出的 id 加上它。",
+      "type": "string"
+    },
+    "ops": {
+      "description": "各 op 的取数规则。",
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/OpSpec"
+      }
+    },
+    "renderChannel": {
+      "description": "整源是否经隐藏 webview 取页面。",
+      "type": "boolean"
+    },
+    "schema": {
+      "description": "文档格式版本，当前为 [`SCHEMA_VERSION`]。",
+      "type": "integer",
+      "format": "uint32",
+      "minimum": 0.0
+    },
+    "title": {
+      "description": "前端显示名（填入 `Comic.sourceTitle`）。",
+      "type": "string"
+    },
+    "vars": {
+      "description": "命名常量，模板里可用 `{名}`。",
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "definitions": {
+    "ArraySpec": {
+      "description": "数组查找：定位一个数组（HTML 用选择器，JSON 用路径），按 `key` 匹配（或不筛选）， 对每个命中取 `take`。\n\n覆盖 mangadex 的四种取值（章节 id、封面文件名、作者、分类标签）、copymanga 的 「章节号 → uuid」与 dongman 的「章节号 → viewer URL」（后两处一个在 JSON 里、 一个在 HTML 里，所以 `at` / `key` / `take` 都按当前作用域的种类求值）。",
+      "type": "object",
+      "required": [
+        "take"
+      ],
+      "properties": {
+        "at": {
+          "description": "数组所在处：HTML 是选择器，JSON 是点分路径；缺省 = 作用域自身就是数组。",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "contains": {
+          "description": "期望值包含该子串（与 `equals` 二选一）。",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "equals": {
+          "description": "期望值（模板，可含 `{chapterIndex}` 等占位）。",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "first": {
+          "description": "`true`（默认）取首个命中；`false` 取全部。",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "inStep": {
+          "description": "取某个请求步骤的响应作为作用域；缺省 = 当前作用域。",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "join": {
+          "description": "取全部时的连接符（缺省 `, `）。",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "key": {
+          "description": "参与比较的取值；缺省 = 元素自身的文本（「这一段里含某标记」这类判定）。",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Field"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "skip": {
+          "description": "取全部时跳过前面 N 个命中（baozimh 的 tag 列表首个是状态，其余才是标签）。",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "take": {
+          "description": "取每个命中元素的什么（HTML 常是 `{\"attr\": \"href\"}`，JSON 是字段路径；可写回退链）。",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Field"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "Category": {
+      "description": "静态分类条目。",
+      "type": "object",
+      "required": [
+        "label",
+        "url"
+      ],
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ChaptersSpec": {
+      "description": "章节表。",
+      "type": "object",
+      "required": [
+        "items"
+      ],
+      "properties": {
+        "dedupBy": {
+          "description": "去重键；缺省按 index。",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Extractor"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "external": {
+          "description": "非空则标记为外链章节。",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Extractor"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "hidden": {
+          "description": "章节上的隐藏值。",
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/Extractor"
+          }
+        },
+        "index": {
+          "description": "章节号；`position` 表示排序去重后的 1 起序号。",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Extractor"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "items": {
+          "description": "章节单元。",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Extractor"
+            }
+          ]
+        },
+        "sort": {
+          "description": "排序方向。",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sortBy": {
+          "description": "多键升序（按给定顺序比较，能解析成数就按数值比）；给了它就不看 `sort`。 baozimh 的章节先按 section_slot 再按 chapter_slot 排，就是靠它。",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Field"
+          }
+        },
+        "title": {
+          "description": "章节标题。",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Field"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "where": {
+          "description": "单元过滤：该 extractor 取值为空的章节丢弃（manhuagui 只认带 title 的章节链接， 章节栏「更新至」的快捷链接没有 title）。",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Extractor"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "Extractor": {
+      "description": "取值规则。字符串简写 = 选择器；对象写法的各键见字段说明。",
+      "anyOf": [
+        {
+          "description": "选择器简写：HTML 选择器（`h1.subj`）或 JSON 路径（`attributes.title`）。",
+          "type": "string"
+        },
+        {
+          "$ref": "#/definitions/ReadSpec"
+        }
+      ]
+    },
+    "Field": {
+      "description": "字段取值：一个 extractor，或它的有序回退链（首个非空获胜）。",
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Extractor"
+          }
+        },
+        {
+          "$ref": "#/definitions/Extractor"
+        }
+      ]
+    },
+    "HotlinkReferer": {
+      "description": "图片热链对：CDN 域名 → 需带上的 Referer（图片代理与下载共用）。",
+      "type": "object",
+      "required": [
+        "domain",
+        "referer"
+      ],
+      "properties": {
+        "domain": {
+          "type": "string"
+        },
+        "referer": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "OpSpec": {
+      "description": "一个 op 的取数规则。",
+      "type": "object",
+      "properties": {
+        "chapters": {
+          "description": "详情页的章节表。",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ChaptersSpec"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "comic": {
+          "description": "详情页的漫画字段。",
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/Field"
+          }
+        },
+        "dedupBy": {
+          "description": "去重键；缺省按 id（列表）或 index（章节）。",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Extractor"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "fields": {
+          "description": "每个单元的字段（search / category）。",
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/Field"
+          }
+        },
+        "hidden": {
+          "description": "跨 op 携带的隐藏值：名字 → extractor。运行时把它从输出剥掉，交给宿主缓存，后续 op 经 ctx 取用。",
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/Extractor"
+          }
+        },
+        "id": {
+          "description": "每个单元的 id（search / category）。",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Extractor"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "input": {
+          "description": "响应体种类：`html`（默认）或 `json`。",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "items": {
+          "description": "重复单元的定位（search / category / images）。",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Extractor"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "limit": {
+          "description": "单元数上限。",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "region": {
+          "description": "先切出区域再找单元（HTML）。",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "request": {
+          "description": "有序请求步骤；空数组表示该 op 不抓取（静态产出）。",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/RequestStep"
+          }
+        },
+        "script": {
+          "description": "整 op 的解析钩子（JS 源码），用于文档表达不了的算法。",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sort": {
+          "description": "排序方向：`asc` / `desc`；缺省保持文档序。",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "url": {
+          "description": "图片 op：每个单元取出的 URL（可写回退链，如 `data-src` 缺失时用 `src`）。",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Field"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "where": {
+          "description": "单元过滤：该 extractor 取值为空的单元丢弃。",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Extractor"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "ReadSpec": {
+      "description": "取值规则的完整写法。`select`/`find`/`default`/`fromChapter`/`template` 至多一个。",
+      "type": "object",
+      "properties": {
+        "array": {
+          "description": "在数组里查找取值（见 [`ArraySpec`]）：章节 id、封面文件名、作者、分类标签都是这个形状。",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ArraySpec"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "attr": {
+          "description": "取该元素的属性而非文本。",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "contains": {
+          "description": "条件取值：取值包含该子串时用 `then`，否则用 `else`。",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "default": {
+          "description": "字面模板：回退链全空时的兜底，可含 `{id}`/`{index}`/`{comicId}` 等占位。",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "else": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "equals": {
+          "description": "条件取值：取值等于该字面量时用 `then`，否则用 `else`。",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "filter": {
+          "description": "过滤器名（见 [`FILTERS`]）：不满足则算空值，回退链落到下一条。",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "from": {
+          "description": "作用域换成某个请求步骤的响应（用于多步请求里从前面步骤取值）。",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "fromChapter": {
+          "description": "取已产出章节数组的首/末项标题（`first` 或 `last`）。",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "localized": {
+          "description": "取值是 locale 映射时，按 en/zh/ja/ko 再任意键取。",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "pick": {
+          "description": "`first`（默认）或 `last`：多个匹配时取首个或末个。",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "script": {
+          "description": "钩子（JS 源码），只在 `items` 上有意义：单元列表由文档里的 JS 给出，字段仍走声明式。 当前只有 hentara 的本地搜索需要（拉全站索引后在脚本内过滤排序）。",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "select": {
+          "description": "HTML 选择器或 JSON 路径，相对当前作用域；缺省 = 当前作用域自身。",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "template": {
+          "description": "模板拼接（`{item}` 是当前单元，其余名字从 vars/ctx/payload 解析）。",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "then": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "transform": {
+          "description": "按序施加的变换名（见 [`TRANSFORMS`]）。",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "vars": {
+          "description": "局部变量：值为 extractor，作用域是当前取值处；供本规则的 template / default / then / else 使用 （mangadex 的封面 URL 要拼漫画 id 与封面文件名，就是靠它）。",
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/Extractor"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "RequestStep": {
+      "description": "一个请求步骤。后一步的 `url` 可以用 `vars` 里从前面步骤响应取出的值。",
+      "type": "object",
+      "required": [
+        "name",
+        "url"
+      ],
+      "properties": {
+        "headers": {
+          "description": "覆盖/追加到文档级请求头。",
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/TemplateChain"
+          }
+        },
+        "input": {
+          "description": "响应体种类（缺省用 op 的 `input`）。",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "description": "步骤名，op 内唯一；`parse` 按它读响应。",
+          "type": "string"
+        },
+        "url": {
+          "description": "URL 模板链；整链求值为空则不抓取这一步。",
+          "allOf": [
+            {
+              "$ref": "#/definitions/TemplateChain"
+            }
+          ]
+        },
+        "vars": {
+          "description": "局部变量：值为 extractor，作用域是**前面**步骤的响应，供本步骤的 `url` 与 `headers` 使用。",
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/Extractor"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "TemplateChain": {
+      "description": "模板链：一个模板，或有序的模板数组（取首个求值非空的）。模板里任一占位求值为空则整条作废。",
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,104 @@
+{
+  "$schema": "https://mojuan.fengw.site/schema.json",
+  "schema": 1,
+  "id": "hentara",
+  "title": "Hentara",
+  "idPrefix": "hentara-",
+  "base": "https://hentara.com",
+  "vars": {
+    "data": "https://cdn.hentara.com/data"
+  },
+  "headers": {
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+    "Accept": "application/json,text/html;q=0.9,*/*;q=0.8"
+  },
+  "categories": [
+    { "label": "全部", "url": "https://hentara.com/browse" },
+    { "label": "热门", "url": "https://hentara.com/popular-manhwa" },
+    { "label": "最新", "url": "https://hentara.com/latest-manhwa" },
+    { "label": "无修正", "url": "https://hentara.com/uncensored-manhwa" },
+    { "label": "最热", "url": "https://hentara.com/hottest-manhwa" },
+    { "label": "Hentai", "url": "https://hentara.com/hentai-read" },
+    { "label": "Adult", "url": "https://hentara.com/genres/adult-manhwa" },
+    { "label": "Romance", "url": "https://hentara.com/genres/romance-manhwa" },
+    { "label": "Action", "url": "https://hentara.com/genres/action-manhwa" },
+    { "label": "Drama", "url": "https://hentara.com/genres/drama-manhwa" },
+    { "label": "Fantasy", "url": "https://hentara.com/genres/fantasy-manhwa" },
+    { "label": "Harem", "url": "https://hentara.com/genres/harem-manhwa" },
+    { "label": "Mature", "url": "https://hentara.com/genres/mature-manhwa" },
+    { "label": "School Life", "url": "https://hentara.com/genres/school-life-manhwa" },
+    { "label": "Comedy", "url": "https://hentara.com/genres/comedy-manhwa" },
+    { "label": "Slice of Life", "url": "https://hentara.com/genres/slice-of-life-manhwa" },
+    { "label": "Isekai", "url": "https://hentara.com/genres/isekai-manhwa" },
+    { "label": "Doujinshi", "url": "https://hentara.com/genres/doujinshi-manhwa" }
+  ],
+  "ops": {
+    "search": {
+      "input": "json",
+      "request": [{ "name": "index", "url": "{data}/index.json", "input": "json" }],
+      "items": {
+        "script": "function (api) { var d = JSON.parse(api.responses.index); var comics = d.comics || []; var kw = String(api.payload.keyword || '').toLowerCase(); var hits = []; for (var i = 0; i < comics.length; i++) { var t = String(comics[i].title || ''); if (t.toLowerCase().indexOf(kw) >= 0) hits.push(comics[i]); } hits.sort(function (a, b) { return String(b.updated_at || '').localeCompare(String(a.updated_at || '')); }); return hits.slice(0, 60); }"
+      },
+      "id": "slug",
+      "fields": {
+        "title": ["title", "slug"],
+        "intro": "description",
+        "cover": "thumbnail_url",
+        "lastChapter": {
+          "select": "latest_episode",
+          "filter": "nonEmpty",
+          "transform": ["prepend:Chapter "]
+        }
+      }
+    },
+    "category": {
+      "request": [{ "name": "list", "url": "{categoryUrl}" }],
+      "items": "a.pg-card, a.ssr-card, a.genre-card",
+      "id": { "attr": "href", "transform": ["stripPrefix:/manhwa/"] },
+      "fields": {
+        "title": [
+          { "select": ".pg-card-title, .ssr-card-title, .genre-card-title" },
+          { "select": "img", "attr": "alt" },
+          { "default": "{itemId}" }
+        ],
+        "cover": { "select": "img", "attr": "src" }
+      }
+    },
+    "detail": {
+      "input": "json",
+      "request": [{ "name": "comic", "url": "{data}/comics/{comicId}.json", "input": "json" }],
+      "comic": {
+        "title": ["comic.title", "comic.slug"],
+        "intro": "comic.description",
+        "cover": ["comic.cover_url", "comic.thumbnail_url"],
+        "status": { "default": "serial" },
+        "lastChapter": { "fromChapter": "last" },
+        "tags": {
+          "array": {
+            "at": "comic.genres",
+            "take": [{}, { "select": "name" }],
+            "first": false
+          }
+        }
+      },
+      "chapters": {
+        "items": "episodes",
+        "index": "episode_number",
+        "title": [{ "select": "title", "transform": ["trim"] }, { "default": "Chapter {index}" }],
+        "sort": "asc"
+      }
+    },
+    "images": {
+      "input": "json",
+      "request": [
+        {
+          "name": "chapter",
+          "url": "{data}/episodes/{comicId}/{chapterIndex}.json",
+          "input": "json"
+        }
+      ],
+      "items": "pages",
+      "url": "image_url"
+    }
+  }
+}
