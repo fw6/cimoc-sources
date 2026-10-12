@@ -1,0 +1,21 @@
+build.mjs
+  s_cb430b706cf6a1::t_738c9af826c3c3 1-82
+README.md
+  s_cb430b706cf6a1::t_fe33e2a3486589 1-68
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.49-trip",
+  "base_commit_sha": "3c1fe02253877885461dcf3c3455632792663b5f",
+  "prompts": {},
+  "sessions": {
+    "s_cb430b706cf6a1": {
+      "agent_id": {
+        "tool": "zcode",
+        "id": "sess_4f1ca8e8-705e-4503-8518-7a2398c6d2c5",
+        "model": "claude-deepseek-v4.1-flash[1M]"
+      },
+      "human_author": "mekhi <lyman.von9506@gmail.com>"
+    }
+  }
+}
