@@ -1,0 +1,21 @@
+README.md
+  s_cb430b706cf6a1::t_44c1960d245cd0 10-11
+  s_cb430b706cf6a1::t_d85c807e2e34c4 36
+  s_cb430b706cf6a1::t_60503238cffa02 65-69
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.49-trip",
+  "base_commit_sha": "8d5a996c9f593df4d593a42ac6dfa7938918b619",
+  "prompts": {},
+  "sessions": {
+    "s_cb430b706cf6a1": {
+      "agent_id": {
+        "tool": "zcode",
+        "id": "sess_4f1ca8e8-705e-4503-8518-7a2398c6d2c5",
+        "model": "claude-deepseek-v4.1-flash[1M]"
+      },
+      "human_author": "mekhi <lyman.von9506@gmail.com>"
+    }
+  }
+}
