@@ -7,8 +7,8 @@
 ## 一个源就是一份 JSON 文档
 
 源不再是一段 JS 脚本：解析规则与 URL 构造写成一份**源文档**（`sources/<id>.json`），
-由应用内置的**源运行时**（`runtime.js`）解释。文档的格式由 `schema.json` 定义——
-把它填进编辑器的 `$schema` 就有补全与校验：
+由应用内置的**源运行时**（`runtime.js`）解释。文档的格式由一份 JSON Schema 定义——
+把它的地址填进编辑器的 `$schema` 就有补全与校验：
 
 ```json
 {
@@ -33,7 +33,7 @@
 }
 ```
 
-文档里的关键概念（`schema.json` 里有逐字段说明）：
+文档里的关键概念（Schema 里有逐字段说明）：
 
 - **取值规则**：字符串是选择器（HTML 选择器或 JSON 路径），对象写法覆盖属性、回退链、
   过滤、变换、条件、语言映射与数组查找。
@@ -61,8 +61,9 @@
 | `runtime.js` | 源运行时（解释文档的共享 JS；应用内置一份同样的副本，这里的是更新通道） |
 | `build.mjs` | 由上面两者生成 `sources.json` |
 | `sources.json` | **生成产物**，别手改 |
-| `schema.json` | 源文档的 JSON Schema（由应用的 Rust 结构体生成，与 `https://mojuan.fengw.site/schema.json` 同一份） |
 
-`runtime.js` 与 `schema.json` 由应用仓库同步过来：前者是
-`desktop/crates/mojuan-core/src/js/runtime.js`，后者用
-`cargo run -q -p mojuan-core --example source_schema` 生成。
+`runtime.js` 由应用仓库同步过来（`desktop/crates/mojuan-core/src/js/runtime.js`）：它既是
+索引里 `runtime.script` 的来源，也是应用可以远程更新的那份。
+
+文档的 JSON Schema 不在本仓库里，出口是 `https://mojuan.fengw.site/schema.json`
+（由应用的 Rust 结构体生成，见 `updater/README.md`）。
