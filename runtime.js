@@ -11,7 +11,13 @@
 //
 // HTML 求值经宿主绑定 __host.select(html, selector) —— 返回 [{attrs, text, html}] 的
 // JSON 字符串，由 app 侧的 scraper（html5ever + CSS 选择器）完成；JSON 路径在本文件里走查。
-// 沙箱不挂 RegExp，本文件只用字符串方法。
+// 沙箱挂了 RegExp（灾难性回溯由 2 秒墙钟超时打断，见 js/mod.rs 的用例），本文件的遍历仍
+// 用字符串方法。
+//
+// 文档里可以嵌一段 JS（钩子）作为算法型源的出口（manhuagui 的 p.a.c.k.e.r 解包、hentara 的
+// 本地搜索）：op 级的 `ops.<op>.script` 给出该 op 的最终值，`items` 上的 script 只给出单元
+// 列表（字段仍走声明式）。钩子拿到的是下面的 api，其中 helpers 是共享前导（与声明式层同一份
+// 实现），select 是宿主选择器的直用形式。
 
 // ---------- 通用小工具 ----------
 
@@ -246,6 +252,11 @@ function selectAll(value, selector, kind) {
   }
   var html = typeof value === "string" ? value : innerHtmlOf(value);
   if (!html) return [];
+  return selectFromHtml(html, selector);
+}
+
+// 宿主绑定的直用形式：HTML 进，节点数组出（声明式层与钩子用的是同一个绑定）。
+function selectFromHtml(html, selector) {
   return JSON.parse(__host.select(html, selector));
 }
 
@@ -560,25 +571,27 @@ function itemList(spec, e) {
   var scope = e.root;
   var kind = e.kind;
   var items = spec.items;
+  var nodes;
   // 单元定位的钩子：整个单元列表由文档里的 JS 给出（hentara 的本地搜索要在全站索引上过滤排序）
   if (typeof items === "object" && items !== null && items.script) {
-    return runItemsHook(items.script, e);
+    nodes = runItemsHook(items.script, e);
+  } else {
+    // items 可以指定从某个请求步骤的响应里找（mangadex/copymanga 的章节来自独立的 feed）
+    if (typeof items === "object" && items !== null && items.from) {
+      var step = stepByName(items.from, e.req);
+      var body = e.responses[items.from];
+      if (body === undefined) return [];
+      scope = body;
+      kind = step ? step.input || inputKind(e.req) : "json";
+      items = items.select;
+    }
+    if (spec.region) {
+      var region = selectOne(scope, spec.region, kind);
+      if (region === null) return [];
+      scope = kind === "html" ? region.html : region;
+    }
+    nodes = selectAll(scope, items, kind);
   }
-  // items 可以指定从某个请求步骤的响应里找（mangadex/copymanga 的章节来自独立的 feed）
-  if (typeof items === "object" && items !== null && items.from) {
-    var step = stepByName(items.from, e.req);
-    var body = e.responses[items.from];
-    if (body === undefined) return [];
-    scope = body;
-    kind = step ? step.input || inputKind(e.req) : "json";
-    items = items.select;
-  }
-  if (spec.region) {
-    var region = selectOne(scope, spec.region, kind);
-    if (region === null) return [];
-    scope = kind === "html" ? region.html : region;
-  }
-  var nodes = selectAll(scope, items, kind);
   if (spec.where) {
     var kept = [];
     for (var i = 0; i < nodes.length; i++) {
@@ -952,7 +965,27 @@ function runItemsHook(src, e) {
   return fn(hookApi(e.req, e));
 }
 
-// 钩子拿到的 api：与声明式层同一份上下文与宿主绑定。
+// 共享前导：钩子与声明式层用的是同一份实现，作者只写源特有的规则（ADR-0002 候选 ②）。
+var HELPERS = {
+  collapse: collapse,
+  trim: trim,
+  stripTags: stripTags,
+  unescape: unescape,
+  after: after,
+  before: before,
+  firstOn: firstOn,
+  digitsAfter: digitsAfter,
+  param: param,
+  absoluteUrl: absoluteUrl,
+  isImageUrl: isImageUrl,
+  jsonPath: jsonPath,
+  scalar: scalar,
+  str: str,
+  applyTransform: applyTransform,
+  applyFilter: applyFilter
+};
+
+// 钩子拿到的 api：与声明式层同一份上下文与宿主绑定（选择器只暴露求值这一个入口）。
 function hookApi(req, e) {
   return {
     op: req.op,
@@ -961,7 +994,8 @@ function hookApi(req, e) {
     responses: req.responses || {},
     doc: DOC,
     root: e ? e.root : null,
-    host: __host
+    helpers: HELPERS,
+    select: selectFromHtml
   };
 }
 

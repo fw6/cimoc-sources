@@ -42,8 +42,17 @@
   取出的值（「先取章节列表，再按章节号取正文」这类站点）。
 - **隐藏值**：`hidden` 声明的值不会进界面数据，由应用按源缓存起来供后续 op 用（系列 URL、
   章节中转链这类）。
-- **钩子**：`script` 是文档内嵌的 JS，只在文档表达不了的算法上使用（见 `manhuagui.json` 的
-  `p.a.c.k.e.r` 解包、`hentara.json` 的本地搜索）。
+- **钩子**：`script` 是文档内嵌的 JS，只用在文档表达不了的算法上。它有两个位置：
+  `ops.<op>.script` 给出该 op 的最终值（`manhuagui.json` 的 `p.a.c.k.e.r` 解包），`items` 上的
+  `script` 只给出单元列表、字段仍走声明式（`hentara.json` 的本地搜索）。写在别处会被拒——
+  运行时不会读它，与其静默失效不如报错。
+
+  钩子拿到一个 `api`：`op` / `payload` / `ctx` / `responses` / `doc` / `root`，外加共享前导
+  `helpers`（`collapse`、`trim`、`stripTags`、`unescape`、`after`、`before`、`firstOn`、
+  `digitsAfter`、`param`、`absoluteUrl`、`isImageUrl`、`jsonPath`、`scalar`、`str`、
+  `applyTransform`、`applyFilter`——与声明式层同一份实现，不必再抄一遍）与
+  `select(html, selector)`（宿主选择器，返回 `{attrs, text, html}` 的数组）。沙箱里有
+  `RegExp`，但单次求值只有 2 秒墙钟，正则要避免灾难性回溯。
 
 ## 加一个源 / 改一个源
 
