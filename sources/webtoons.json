@@ -33,7 +33,7 @@
       "request": [
         { "name": "list", "url": "{base}/search?keyword={keyword|encode}" }
       ],
-      "items": "a._card_item[href*=\"/list?title_no=\"]",
+      "items": "ul.webtoon_list a[href*=\"/list?title_no=\"]",
       "id": { "attr": "href", "transform": ["digitsAfter:title_no="] },
       "limit": 24,
       "fields": {
@@ -53,7 +53,7 @@
     },
     "category": {
       "request": [{ "name": "list", "url": "{categoryUrl}" }],
-      "items": "a._card_item[href*=\"/list?title_no=\"]",
+      "items": "ul.webtoon_list a[href*=\"/list?title_no=\"]",
       "id": { "attr": "href", "transform": ["digitsAfter:title_no="] },
       "limit": 24,
       "fields": {
