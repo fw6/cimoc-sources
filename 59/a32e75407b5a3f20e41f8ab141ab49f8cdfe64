@@ -1,0 +1,20 @@
+README.md
+  s_01d4358afeeaab::t_1d434bc1cc64c4 74
+  s_01d4358afeeaab::t_14bbef665b46a8 78
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.49-trip",
+  "base_commit_sha": "59a32e75407b5a3f20e41f8ab141ab49f8cdfe64",
+  "prompts": {},
+  "sessions": {
+    "s_01d4358afeeaab": {
+      "agent_id": {
+        "tool": "zcode",
+        "id": "sess_973dc02c-53e5-4f9c-ae9f-bf228320c6ac",
+        "model": "claude-deepseek-v4.1-flash[1M]"
+      },
+      "human_author": "mekhi <lyman.von9506@gmail.com>"
+    }
+  }
+}
