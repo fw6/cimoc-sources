@@ -71,8 +71,8 @@
 | `build.mjs` | 由上面两者生成 `sources.json` |
 | `sources.json` | **生成产物**，别手改 |
 
-`runtime.js` 由应用仓库同步过来（`desktop/crates/mojuan-core/src/js/runtime.js`）：它既是
+`runtime.js` 由应用仓库同步过来（`crates/mojuan-core/src/js/runtime.js`）：它既是
 索引里 `runtime.script` 的来源，也是应用可以远程更新的那份。
 
 文档的 JSON Schema 不在本仓库里，出口是 `https://mojuan.fengw.site/schema.json`
-（由应用的 Rust 结构体生成，见 `updater/README.md`）。
+（由应用的 Rust 结构体生成，见 `apps/updater/README.md`）。
