@@ -109,7 +109,9 @@
       "request": [
         { "name": "page", "url": "{base}/comic/{comicId}/chapter-{chapterIndex}.html" }
       ],
-      "items": "img[data-index]",
+      "items": {
+        "script": "function (api) { var nodes = api.select(api.root, 'img[data-index]'); var seen = {}; var out = []; for (var i = 0; i < nodes.length; i++) { var attrs = nodes[i].attrs || {}; var url = attrs['data-src'] || attrs['src'] || ''; if (!url || seen[url]) continue; seen[url] = true; out.push(nodes[i]); } return out; }"
+      },
       "url": [{ "attr": "data-src", "filter": "nonEmpty" }, { "attr": "src" }]
     }
   }
